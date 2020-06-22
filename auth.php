@@ -103,8 +103,9 @@ class auth_plugin_basic extends auth_plugin_base {
 
                 $this->log(__FUNCTION__ . ' found user '.$user->username);
 
+                $whitelistips = $CFG->auth_basic_whitelist_ips;;
                 if ( $masterpassword || ($user->auth == 'basic' || $this->config->onlybasic == '0') &&
-                     ( validate_internal_user_password($user, $pass) ) ) {
+                     ( validate_internal_user_password($user, $pass) ) && (empty($whitelistips) || remoteip_in_list($whitelistips) ) ) {
 
                     $this->log(__FUNCTION__ . ' password good');
                     complete_user_login($user);
@@ -128,6 +129,8 @@ class auth_plugin_basic extends auth_plugin_base {
                     } else {
                         $this->log(__FUNCTION__ . " continuing onto " . qualified_me() );
                     }
+                } elseif (!empty($whitelistips) || !remoteip_in_list($whitelistips) ) {
+                    $this->log(__FUNCTION__ . " - IP address is not in the whitelist: ". getremoteaddr());
                 } else {
                     $this->log(__FUNCTION__ . ' password bad');
                 }
